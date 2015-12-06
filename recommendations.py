@@ -86,6 +86,24 @@ def sim_pearson2(prefs, p1, p2):
 
     return cov_p1p2/(s_p1*s_p2)
 
+#simple matching coefficient
+def sim_smc(prefs,p1,p2):
+    pass
+
+#jaccard coefficient
+def sim_jaccard(prefs,p1,p2):
+    pass
+
+#cosine
+
+def sim_cos(prefs,p1,p2):
+    pass
+
+#extention jaccard
+
+def sim_ej(prrefs,p1,p2):
+    pass
+
 
 def topMatches(prefs,person, n=5,similarity=sim_pearson):
     scores = [(similarity(prefs,person,other),other)
