@@ -42,7 +42,8 @@ for word in wordlist:
     out.write('\t%s' %word)
 out.write('\n')
 for blog,wc in wordcounts.items():
-    out.write(blog)
+    blog=re.compile(r'[\n]+').sub('',blog)
+    out.write('%s' %blog)
     for word in wordlist:
         if word in wc:
             out.write('\t %d' % wc[word])
