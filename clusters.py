@@ -39,10 +39,9 @@ class bicluster:
 def hcluster(rows,distance=pearson):
     distances={}
     currentclustid=-1
-
     clust=[bicluster(rows[i],id=i) for i in range(len(rows))]
     while len(clust)>1:
-        lowestpai=(0,1)
+        lowestpair=(0,1)
         closet=distance(clust[0].vec,clust[1].vec)
 
         for i in range(len(clust)):
@@ -52,13 +51,12 @@ def hcluster(rows,distance=pearson):
                     distances[(clust[i].id,clust[j].id)]=distance(clust[i].vec,clust[j].vec)
 
                 d=distances[(clust[i].id,clust[j].id)]
-
                 if d<closet:
                     closest=d
                     lowestpair=(i,j)
         #print(clust[0].vec)
         print(len(clust[0].vec))
-        print(lowestpair[0])
+        print(lowestpair)
         mergevec=[(clust[lowestpair[0]].vec[i]+clust[lowestpair[1]].vec[i])/2.0 for i in range(len(clust[0].vec))]
 
         newcluster=bicluster(mergevec, left=clust[lowestpair[0]],
@@ -76,7 +74,7 @@ def hcluster(rows,distance=pearson):
 def printclust(clust,labels=None,n=0):
     #indent to make a hierarchy layout
     for i in range(n):
-        print(' ')
+        print(' ',end='')
     if clust.id<0:
         #negative id means that this is branch
         print('-')
