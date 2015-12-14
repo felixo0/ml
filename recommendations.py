@@ -87,24 +87,44 @@ def sim_pearson2(prefs, p1, p2):
     return cov_p1p2/(s_p1*s_p2)
 
 #simple matching coefficient
+#p is in p1 not in p2
+#q is in p2 not in p1
+#r is neither in p1 nor in p2
+#s is in p1 and p2
 def sim_smc(prefs,p1,p2):
-    pass
+    all_items={}
+    both_items={}
+    neither_items={}
+    for i in range(len(prefs)):
+        for item in prefs[i]:
+            all_items[item]=1
+    for item in prefs[p1]:
+        if item in prefs[p2]:
+            both_items[item]=1
+        else:
+            only_p1_items[item]=1
+    t=len(all_items)
+    s=len(both_items)
+    r=t-(len(p1)+len(p2)-s)
+    return  (s+r)/t
 
 #jaccard coefficient
 def sim_jaccard(prefs,p1,p2):
     pass
 
 #cosine
-
 def sim_cos(prefs,p1,p2):
     pass
 
 #extention jaccard
-
 def sim_ej(prrefs,p1,p2):
     pass
 
+#tanomoto
+def sim_tanimoto(prefs,p1,p2):
+	pass
 
+#
 def topMatches(prefs,person, n=5,similarity=sim_pearson):
     scores = [(similarity(prefs,person,other),other)
             for other in prefs if other!=person]
