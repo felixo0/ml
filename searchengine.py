@@ -10,16 +10,18 @@ crawler to download,parse pages, and then save to database
 from urllib import request, parse
 from bs4 import *
 
+import sqlite3
 #the words to ignore
 ignoreword=set(['the','of','to','and','a','in','is','it'])
 
 class crawler:
-    def __init__(self,dbname):
-        pass
+    def __init__(self,dbname='search.db'):
+        self.con=sqlite3.connect(dbname)
     def __del__(self):
-        pass
+        self.con.close()
     def dbcommit(self):
-        pass
+        self.con.commit()
+
     # Auxilliary function for getting an entry id and adding
     # it if it's not present
     def getentryid(self,table,field,value,createnew=True):
@@ -70,4 +72,7 @@ class crawler:
         pass
     # Create the database tables
     def createindextables(self):
-        pass
+        self.con.execute('create table urllist(url)')
+        self.con.execute('create table wordlist(word)')
+        self.con.execute('create table wordlocation(urlid,wordid,location)')
+        self.con.execute
