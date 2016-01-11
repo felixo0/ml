@@ -3,7 +3,6 @@
 #Author@ LogicWang
 #A dictionary of movie critics and their rating of a small set of movies
 
-
 from math import sqrt
 
 critics={'Lisa Rose': {'Lady in the Water': 2.5, 'Snakes on a Plane': 3.5,
@@ -64,6 +63,7 @@ def sim_pearson(prefs,p1,p2):
         return 0
     return num/den
 
+#another way to implement pearson correlation
 def sim_pearson2(prefs, p1, p2):
     si = {}
     for item in prefs[p1]:
@@ -124,7 +124,7 @@ def sim_ej(prrefs,p1,p2):
 def sim_tanimoto(prefs,p1,p2):
 	pass
 
-#
+# k nearest neighbor
 def topMatches(prefs,person, n=5,similarity=sim_pearson):
     scores = [(similarity(prefs,person,other),other)
             for other in prefs if other!=person]
@@ -133,10 +133,7 @@ def topMatches(prefs,person, n=5,similarity=sim_pearson):
     scores.reverse()
     return scores[0:n]
 
-
-#gets recommendations for a person by using a weighted average 
-#of every other user's rankings
-
+#gets recommendations for a person by using a weighted average of every other user's rankings
 def getRecommendations(prefs,person,similarity=sim_pearson):
     totals={}
     simSums={}
