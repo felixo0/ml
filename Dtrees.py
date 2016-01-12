@@ -114,3 +114,14 @@ def getTree(filename):
     fr=open(filename,'rb')
     tree=pickle.load(fr)
     return tree
+
+#based on inputTree and features, classify tests and compare the result with classLabels
+def test(inputTree,features,tests,classLabels):
+    errorCount=0
+    numOfTests=len(tests)
+    for i in range(numOfTests):
+        result=classify(inputTree,features,test[i])
+        if result!=classLabels[i]:
+            errorCount+=1
+    errorRate=errorCount/numOfTests
+    return errorRate
