@@ -1,133 +1,167 @@
 #Python3.5 Mac OS X
 #2015.12.12
+#mangobada@163.com
 
 '''
-implement of decision tree 
-by ID3
+implement of decision tree algorithm  ID3
 '''
 
 from math import log
 import operator
 import pickle
+import numpy as np
 
-#calculate entropy
-def entropy(dataSet):
-    l=len(dataSet)
-    labels={}
-    for featureVec in dataSet:
-        label=featureVec[-1]
-        if label not in labels.keys():
-            labels[label]=0
-        labels[label]+=1
-    entropy=0.0
-    for item  in labels:
-        prob=labels[item]/l
-        entropy-=prob*log(prob,2)
-
-    return entropy
-
-#a small data set to test program
-def createDataSet():
-    dataSet = [[1, 1, 'yes'],
+#a small data set to verify the correction of program
+def create_dataset():
+    dataset = [[1, 1, 'yes'],
     [1, 1, 'yes'],
     [1, 0, 'no'],
     [0, 1, 'no'],
     [0, 1, 'no']]
     labels = ['no surfacing','flippers']
-    return dataSet, labels 
+    return dataset, feature_names 
 
-#return the splitted dataSet where feature equal to value
-def splitDataSet(dataSet,featureAxis,value):
+#
+def pre_process(dataset): 
+    pass
+
+#transform the text file to matrix
+def file_to_matrix(filename):
+     fr=open(filename)
+     num_of_lines=len(fr.readlines())
+     matrix=np.zeros((num_of_lines,3))
+     class_labels=[]
+     feature_names=[]
+     fr=open(filename)
+     feature_names=fr.readline().split('\t')[:-1]
+     index=0
+     for line in fr.readlines():
+         line=line.strip()
+         words_list = line.split('\t')
+         matrix[index,:]=words_list[0:-2]
+         class_labels.append(words_list[-1])
+         index+=1
+     return matrix,class_labels,feature_names
+
+#partiton  dataset to trainset and testset
+def  partition_dataset(dataset,ratio):
+    l=len(dataset)
+    len_test=l*ratio
+    test_set=dataset[:len_test]
+    train_set=dataset[len_test:]
+    return train_set,test_set
+#calculate entropy
+def entropy(dataset):
+    length=len(dataset)
+    labels={}
+    for feature_vec  in dataset:
+        label=feature_vec[-1]
+        if label not in labels.keys():
+            labels[label]=0
+        labels[label]+=1
+    entropy=0.0
+    for item  in labels:
+        prob=labels[item]/length
+        entropy-=prob*log(prob,2)
+    return entropy
+
+#return the splitted dataset where feature equal to value 
+#and remove the feature_axis
+def split_dataset(dataset,index,value):
     result=[]
-    for featureVec in dataSet:
-        if featureVec[featureAxis]==value:
-            reducedVec=featureVec[:featureAxis]
-            reducedVec.extend(featureVec[featureAxis+1:])
-            result.append(reducedVec)
+    for feature_vec in dataset:
+        if feature_vec[index]==value:
+            reduced_vec=feature_vec[:index]
+            reduced_vec.extend(feature_vec[index+1:])
+            result.append(reduced_vec)
     return result
 
 #the best feature is the one that has largest infoGain
-def chooseBestFeatureToSplit(dataSet):
-    baseEntropy=entropy(dataSet)
-    numOfFeatures=len(dataSet[0])-1
-    bestInfoGain=0.0
-    bestFeature=-1
-    for i in range(numOfFeatures):
-        featureValues=[x[i] for x in dataSet]
-        uniqueFeatVal=set(featureValues)
-        newEntropy=0.0
-        for value in uniqueFeatVal:
-            subDataSet=splitDataSet(dataSet,i,value)
-            prob=len(subDataSet)/len(dataSet)
-            newEntropy+=prob*entropy(subDataSet)
-        infoGain=baseEntropy-newEntropy
-        if infoGain>bestInfoGain:
-            bestInfoGain=infoGain
-            bestFeature=i
-    return bestFeature 
+def choose_best_feature_split(dataset):
+    base_entropy=entropy(dataset)
+    num_of_features=len(dataset[0])-1
+    best_info_gain=0.0
+    best_feature=-1
+    for i in range(num_of_features):
+        feature_values=[x[i] for x in dataset]
+        uni_feature_values=set(feature_values)
+        new_entropy=0.0
+        for value in uni_feature_values:
+            sub_dataset=split_dataset(dataset,i,value)
+            prob=len(sub_dataset)/len(dataset)
+            new_entropy+=prob*entropy(sub_dataset)
+        info_gain=base_entropy-new_entropy
+        if info_gain>best_info_gain:
+            best_info_gain=info_gain
+            best_feature=i
+    return best_feature_index  
 
 #get the majority count label of a set to represent the set
-def majorityCnt(classList):
-    classCount={}
-    for vote in classList:
-        if vote not in classCount.keys():
-            classCount[vote] = 0
-        classCount[vote] += 1
-        sortedClassCount = sorted(classCount.items(), key=operator.itemgetter(1), reverse=True)
-    return sortedClassCount[0][0 ]
+def majority(label_list):
+    label_count={}
+    for vote in label_list:
+        if vote not in label_count.keys():
+            label_count[vote] = 0
+        label_count[vote] += 1
+        sorted_label_count = sorted(label_count.items(), key=operator.itemgetter(1), reverse=True)
+    return sorted_label_count[0][0]
+
+#equal to create_tree
+def train(dataset,features):
+    tree=create_tree(dataset,features)
+    return tree
 
 #recursively create a tree based on entropy
-def createTree(dataSet,labels):
-    classList=[x[-1] for x in dataSet]
-    if classList.count(classList[0])==len(classList):
-        return classList[0]
-    if len(dataSet[0])==1:
-        return majority(classList)
-    bestFeature=chooseBestFeatureToSplit(dataSet)
-    bestFeatureLabel=labels[bestFeature]
-    myTree = {bestFeatureLabel:{}}
-    del(labels[bestFeature])
-    featValues = [example[bestFeature] for example in dataSet] 
-    uniqueVals = set(featValues)
-    for value in uniqueVals:
-        subLabels = labels[:]
-        myTree[bestFeatureLabel][value] = createTree(splitDataSet(dataSet, bestFeature, value),subLabels)
-     return myTree
+def create_tree(dataset,features):
+    label_list=[x[-1] for x in dataset]
+    #process special case
+    if label_list.count(label_list[0])==len(label_list):
+        return label_list[0]
+    if len(dataset[0])==1:
+        return majority(label_list)
+    index=choose_best_feature_split(dataset)
+    best_feature=features[index]
+    my_tree = {best_feature:{}}
+    del(feature[index])
+    feature_values = [row[index] for row  in dataset] 
+    unique_values = set(feature_values)
+    for value in unique_values:
+        sub_features = features[:]
+        my_tree[best_feature][value] = create_tree(split_dataset(dataset, index, value),sub_features)
+    return my_tree
 
 #classify the test sample by the input tree
-def classify(inputTree,featureNames,test):
-    firstKey=list(inputTree.keys())[0]
-    secondDict=inputTree[firstKey]
+def classify(tree, test, test_features):
+    first_key=list(tree.keys())[0]
+    value_dict=tree[first_key]
     #print(firstKey)
     #print(featureNames)
-    featureIndex=featureNames.index(firstKey)
-    for key in secondDict.keys():
-        if test[featureIndex]==key:
-            if type(secondDict[key]).__name__=='dict':
-                classLabel= classify(secondDict[key],featureNames,test)
+    feature_index=test_features.index(first_key)
+    for key in value_dict.keys():
+        if test[feature_index]==key:
+            if type(value_dict[key]).__name__=='dict':
+                class_label= classify(value_dict[key],test,test_features)
             else:
-                classLabel=secondDict[key]
-    return classLabel
+                class_label=value_dict[key]
+    return class_label
 
-#store the tree as a file
-def storeTree(inputTree,filename):
+#store and get tree
+def store_tree(tree,filename):
     fw=open(filename,'wb')
-    pickle.dump(inputTree,fw)
+    pickle.dump(tree,fw)
     fw.close()
-
-#get tree from file
-def getTree(filename):
+def get_tree(filename):
     fr=open(filename,'rb')
     tree=pickle.load(fr)
     return tree
 
-#based on inputTree and features, classify tests and compare the result with classLabels
-def test(inputTree,features,tests,classLabels):
-    errorCount=0
-    numOfTests=len(tests)
-    for i in range(numOfTests):
-        result=classify(inputTree,features,test[i])
-        if result!=classLabels[i]:
-            errorCount+=1
-    errorRate=errorCount/numOfTests
-    return errorRate
+#based on inputTree and features, classify tests and compare the result with class labels
+def test(tree, testset, test_features):
+    error_count=0.0
+    num_of_tests=len(testset)
+    for i in range(num_of_tests):
+        result=classify(tree,test[i],test_features)
+        if result != labels[i]:
+            error_count+=1
+    error_rate=error_count/num_of_tests
+    return error_rate
