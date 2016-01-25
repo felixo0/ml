@@ -1,0 +1,3 @@
+the dataset directory include training and testing data
+in each dataset,  first row is features name(if have)
+last column is class label(or target)
