@@ -8,7 +8,6 @@ implement of decision tree algorithm  ID3
 
 from math import log
 import operator
-import pickle
 import numpy as np
 
 #a small data set to verify the correction of program
@@ -44,12 +43,13 @@ def file_to_matrix(filename):
      return matrix,class_labels,feature_names
 
 #partiton  dataset to trainset and testset
-def  partition_dataset(dataset,ratio):
+def partition_dataset(dataset,ratio):
     l=len(dataset)
     len_test=l*ratio
     test_set=dataset[:len_test]
     train_set=dataset[len_test:]
     return train_set,test_set
+
 #calculate entropy
 def entropy(dataset):
     length=len(dataset)
@@ -113,21 +113,25 @@ def train(dataset,features):
 
 #recursively create a tree based on entropy
 def create_tree(dataset,features):
+    features_list=features[:]
     label_list=[x[-1] for x in dataset]
     #process special case
+    #all of data have same label
     if label_list.count(label_list[0])==len(label_list):
         return label_list[0]
+    #all of feature was splitted
     if len(dataset[0])==1:
         return majority(label_list)
     index=choose_best_feature_split(dataset)
     best_feature=features[index]
     my_tree = {best_feature:{}}
-    del(feature[index])
+    del(features_list[index])
     feature_values = [row[index] for row  in dataset] 
     unique_values = set(feature_values)
     for value in unique_values:
-        sub_features = features[:]
-        my_tree[best_feature][value] = create_tree(split_dataset(dataset, index, value),sub_features)
+        sub_features = features_list[:]
+        sub_tree= create_tree(split_dataset(dataset, index, value),sub_features)
+        my_tree[best_feature][value]=sub_tree
     return my_tree
 
 #classify the test sample by the input tree
@@ -144,16 +148,6 @@ def classify(tree, test, test_features):
             else:
                 class_label=value_dict[key]
     return class_label
-
-#store and get tree
-def store_tree(tree,filename):
-    fw=open(filename,'wb')
-    pickle.dump(tree,fw)
-    fw.close()
-def get_tree(filename):
-    fr=open(filename,'rb')
-    tree=pickle.load(fr)
-    return tree
 
 #based on inputTree and features, classify tests and compare the result with class labels
 def test(tree, testset, test_features):

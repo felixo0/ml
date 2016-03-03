@@ -1,5 +1,5 @@
 #smo implementation of svm
-#
+#refer to platt's paper
 #2016.2.15
 #mangobada@163.com
 
@@ -63,6 +63,7 @@ def select_random_j(i,m):
     return j
 
 #heuristic select j
+#select j to get largest error_i-error_j
 def select_j(i, args, error_i):
     max_k = -1
     max_delta_k=0
@@ -95,6 +96,23 @@ def clip_alpha(alpha_j,L,H):
 def update_error(args, k):
     error_k = calc_error(args, k)
     args.error[k] = [1, error_k]
+
+def take_step(i,j, args):
+    if i1==i2:
+        return 0
+    if(args.label[i] != args.label[j]):
+        L = max(0, args.a[j]-args.a[i])
+        H = min(args.C , args.C+args.a[j]-args.a[i])
+    else:
+        L = max(0, args.a[j]+args.a[i]-args.C)
+        H = min(args.C, args.a[j]+args.a[i])
+    if L==H:
+        print("L==H")
+        return 0
+
+
+
+
 
 def inner_loop(i, args):
     error_i = calc_error(args, i )

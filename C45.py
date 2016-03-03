@@ -6,12 +6,11 @@
 implement of decision tree algorithm  C4.5
 changed by ID3 in choose best feature to split 
 from info_gain  to info_gain_ratio
-to avoid choose the feature which has too many value
+to avoid choose the feature which has too many values
 '''
 
 from math import log
 import operator
-import pickle
 import numpy as np
 
 #a small data set to verify the correction of program
@@ -47,12 +46,13 @@ def file_to_matrix(filename):
      return matrix,class_labels,feature_names
 
 #partiton  dataset to trainset and testset
-def  partition_dataset(dataset,ratio):
+def partition_dataset(dataset,ratio):
     l=len(dataset)
     len_test=l*ratio
     test_set=dataset[:len_test]
     train_set=dataset[len_test:]
     return train_set,test_set
+
 #calculate entropy
 def entropy(dataset):
     length=len(dataset)
@@ -78,6 +78,35 @@ def split_dataset(dataset,index,value):
             reduced_vec.extend(feature_vec[index+1:])
             result.append(reduced_vec)
     return result
+
+#discretize continues value by choose proper center-value
+#the axis is the column need to discretize 
+def discretize(dataset,feature_values,axis):
+    base_entropy=entropy(dataset)
+    best_info_gain_ratio=0.0
+    split_entropy=0
+    split_info=0.0
+    best_discret_split=[]
+    sorted_values=sorted(set(feature_values))
+    for i in range(len(sorted_values)-1):
+        cen=(sorted_values[i]+sorted_values[i+1])/2
+        discret_values=[ 'L'+str(cen) if (value<cen) else 'H'+str(cen) for value in feature_values]
+        unique_values=set(discret_values)
+        tmp_data=dataset.copy()
+        for index in range(len(discret_values)):
+            tmp_data[index][axis]=discret_values[index]
+        for value in unique_values:
+            sub_dataset=split_dataset(tmp_data, axis,value)
+            prob=len(sub_dataset)/float(len(tmp_data))
+            split_entropy+=prob*entropy(sub_dataset)
+            split_info-=prob*log(prob,2)
+        info_gain_ratio = (base_entropy - split_entropy)/split_info
+        if info_gain_ratio > best_info_gain_ratio:
+            best_info_gain_ratio=info_gain_ratio
+            best_discret_split=discret_values
+    return best_discret_split
+
+
 
 #the best feature is the one that has largest infoGain
 def choose_best_feature_split(dataset):
@@ -136,6 +165,21 @@ def create_tree(dataset,features):
         sub_features = features[:]
         my_tree[best_feature][value] = create_tree(split_dataset(dataset, index, value),sub_features)
     return my_tree
+
+
+def prune(tree):
+    first_key=tree.keys()[0]
+    subtree=tree[first_key]
+    #all of subtree[key] is leaf node
+    tree_bottom = all(type(subtree[key]).__name__ != 'dict' for key in subtree.keys())
+    if tree_bottom==True:
+        weighted_sum_error=0
+        subtree_cases=0
+        subtree_e=0
+        subtree_classlist=[]
+        for key in subtree.keys():
+            classl_list
+
 
 #classify the test sample by the input tree
 def classify(tree, test, test_features):
