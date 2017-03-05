@@ -1,0 +1,38 @@
+# Build and Release Folders
+bin/
+bin-debug/
+bin-release/
+[Oo]bj/ # FlashDevelop obj
+[Bb]in/ # FlashDevelop bin
+
+# Other files and folders
+.settings/
+*.o
+*.out
+
+#idea IDE files
+.idea/
+target/
+project/
+*.iml
+*.DS_Store
+
+
+*.class
+#data set 
+MNIST-data/
+t10k-*
+train-*.gz
+text8.zip
+tsne.png
+inception5h.zip
+imagenet_comp_graph_label_strings.txt
+tensorflow_inception_graph.pb
+pilatus800.jpg
+
+
+# Executables
+*.swf
+*.air
+*.ipa
+*.apk
