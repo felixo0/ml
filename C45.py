@@ -152,20 +152,32 @@ def create_tree(dataset,features):
     label_list=[x[-1] for x in dataset]
     #process special case
     if label_list.count(label_list[0])==len(label_list):
-        return label_list[0]
+        return (label_list[0],str(len(dataset))+'/'+','.join(label_list))
     if len(dataset[0])==1:
-        return majority(label_list)
+        return (majority(label_list),str(len(dataset))+'/'+','.join(label_list))
     index=choose_best_feature_split(dataset)
     best_feature=features[index]
     my_tree = {best_feature:{}}
+    info_tree = {best_feature:{}}
     del(feature[index])
     feature_values = [row[index] for row  in dataset] 
     unique_values = set(feature_values)
     for value in unique_values:
         sub_features = features[:]
-        my_tree[best_feature][value] = create_tree(split_dataset(dataset, index, value),sub_features)
-    return my_tree
+        sub_dataset=split_dataset(dataset,index,value)
+        label_list=[x[-1] for x in sub_dataset]
+        label_list_string=','.join(label_list)
+        subtree = create_tree(sub_dataset,sub_features)
+        my_tree[best_feature][value] = subtree[0]
+        if type(subtree[0]).__name__ == 'dict':
+            info_tree[best_feature][str(value)+'/'+str(len(sub_dataset))+'/'+label_list_string]=subtree[1]
+        else:
+            info_tree[best_feature][str(value)+'/'+str(len(sub_dataset))+'/'+label_list_string]=subtree[0]
+    tree = (my_tree,info_tree)
+    return tree
 
+def real_error_rate(N,e,CF):
+    pass
 
 def prune(tree):
     first_key=tree.keys()[0]
@@ -176,9 +188,28 @@ def prune(tree):
         weighted_sum_error=0
         subtree_cases=0
         subtree_e=0
-        subtree_classlist=[]
+        subtree_class_list=[]
         for key in subtree.keys():
-            classl_list
+            classl_list=key.split('/')[2].split(',')
+            leaf_class=class_list
+            subtree_class_list.extend(leaf_class)
+            N=int(key.split('/')[1])
+            subtree_cases+=N
+            leaf_class_labels=subtree[key]
+            e=N-leaf_class.count(leaf_class_labels)
+            weighted_sum_error += real_error_rate(N,e)*N
+        subtree_esubtree_cases-subtree_class_list.count(majority(subtree_class_list))
+        weighted_avg_error = weighted_sum_error/subtree_cases
+        subtree_error=real_error_rate(subtree_cases,subtree_e)
+        if subtree_error < weighted_avg_error or len(subtree_class_list)==1
+            new_class = majority(subtree_class_list)
+            return new_class
+        else
+            return tree
+        for key in subtree.keys():
+            if type(subtree[key]).__name__ == 'dict':
+                subtree[key] = prune(subtree[key])
+        return tree
 
 
 #classify the test sample by the input tree
