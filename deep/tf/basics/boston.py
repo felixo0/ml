@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # coding: utf-8
 
 
@@ -29,6 +30,11 @@ x_train = scaler.fit_transform(x_train)
 
 # build 2 layers fully connected DNN with 10, 10 units respectively
 feature_columns = tf.contrib.learn.infer_real_valued_columns_from_input(x_train)
+
+
+# tf.contrib.learn.Estimator()
+
+
 regressor = tf.contrib.learn.DNNRegressor(feature_columns=feature_columns, hidden_units=[10,10])
 
 print(x_train)
