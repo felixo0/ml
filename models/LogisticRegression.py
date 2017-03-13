@@ -1,5 +1,5 @@
 #Mac OS X python3.5
-#20161.18
+#2016.1.18
 #mangobada@163.com
 
 import numpy as np
